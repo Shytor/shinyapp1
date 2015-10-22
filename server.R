@@ -5,7 +5,8 @@ hideAnswer <- TRUE
 generate <- function(i1,i2){
     #create a random data set
     hideAnswer <<- TRUE
-    ranData <- rnorm(i1, mean=70, sd=i2)
+    ranMean <- floor(runif(1, min=68, max=72))
+    ranData <- rnorm(i1, mean=ranMean, sd=i2)
 }
 shinyServer(
     function(input, output) {
@@ -16,16 +17,19 @@ shinyServer(
             Data <- genData()
             hist(Data, breaks=10, xlab="Random Values",col="lightgreen",main="Histogram")
             mu <- input$mu
-            mse <- mean((ranData - mu)^2)
+            mse <- mean((Data - mu)^2)
             lines(c(mu, mu), c(0, 200),col="red",lwd=5)
         })
         output$tmu <- renderText({input$mu})
-        output$tmse <- renderText({mean((ranData - input$mu)^2)})
+        output$tmse <- renderText({
+            Data <- genData()
+            mean((Data - input$mu)^2)
+            })
         output$text3 <- renderText({
-            genData()
+            Data <- genData()
             input$ansButton
             if (hideAnswer) isolate("Press the button for answer!")
-            else isolate(paste("The correct mu is: ", mean(ranData)))
+            else isolate(paste("The correct mu is: ", mean(Data)))
         })
         observeEvent(input$ansButton, {
             hideAnswer <<- FALSE
